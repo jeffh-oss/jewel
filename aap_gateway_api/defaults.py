@@ -20,8 +20,6 @@ AAP_DEPLOYMENT_TYPE = "self-managed"
 
 ALLOWED_HOSTS = ["*"]
 
-GATEWAY_ENABLE_LEGACY_CACHE = False
-
 # This setting should not be overrideable
 AOC_UNCHANGEABLE_PREFERENCES = ['gateway_token_name']
 
@@ -49,6 +47,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 CACHES = {
     "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "unix:///var/run/redis/redis.sock?db=4",
+        "KEY_PREFIX": "gateway",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {
+                "protocol": 2,
+            },
+        },
+    },
+    "legacy": {
         "BACKEND": "ansible_base.lib.cache.fallback_cache.DABCacheWithFallback",
     },
     "primary": {
@@ -77,17 +86,6 @@ CACHES = {
     "fallback": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
         "LOCATION": "/var/tmp/django_cache",
-    },
-    "sidecar": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "unix:///var/run/redis/redis.sock?db=0",
-        "KEY_PREFIX": "gateway",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "CONNECTION_POOL_KWARGS": {
-                "protocol": 2,
-            },
-        },
     },
 }
 
